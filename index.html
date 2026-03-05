@@ -3,37 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>情緒元素實驗室</title>
+    <title>情緒偵探實驗室</title>
     <style>
         :root {
             --cell-size: 48px;
             --gap: 3px;
             --bg-color: #f0f2f5;
-            --sidebar-width: 320px;
+            --sidebar-width: 340px;
         }
 
         @media (max-height: 600px) {
-            :root { --cell-size: 38px; --sidebar-width: 280px; }
+            :root { --cell-size: 38px; --sidebar-width: 300px; }
             h1 { font-size: 1.2rem; margin: 5px 0; display: inline-block; }
             body { padding: 10px; }
             .dice-box { width: 50px; height: 50px; font-size: 24px; }
             .dice-area { height: 60px; }
-            .info-card { padding: 8px; font-size: 13px; }
         }
 
         body {
             font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
-            background-color: var(--bg-color);
-            margin: 0; padding: 20px; height: 100vh;
-            box-sizing: border-box; overflow: hidden;
-            display: flex; flex-direction: column;
+            background-color: var(--bg-color); margin: 0; padding: 20px; height: 100vh;
+            box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column;
         }
 
         h1 { margin: 0 0 10px 0; text-align: center; font-size: 1.6rem; color: #333; letter-spacing: 1px; }
 
         .main-container {
-            display: flex; flex: 1; gap: 15px;
-            justify-content: center; align-items: flex-start;
+            display: flex; flex: 1; gap: 15px; justify-content: center; align-items: flex-start;
             height: 100%; overflow: hidden; flex-direction: row; 
         }
 
@@ -63,7 +59,9 @@
             box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); transition: transform 0.1s;
             text-align: center; line-height: 1.1; padding: 1px;
         }
-        .element-cell.selectable { cursor: pointer; box-shadow: 0 0 0 2px #4ecdc4; transform: scale(1.05); z-index: 5; }
+        .element-cell.selectable { cursor: pointer; box-shadow: 0 0 0 2px #4ecdc4; }
+        .element-cell.selectable:hover { transform: scale(1.1); z-index: 5; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
+        .element-cell.found { box-shadow: 0 0 0 3px #FF4444; animation: popIn 0.3s ease; }
 
         /* 顏色分類 */
         .c-yellow { background-color: #F8C626; } .c-beige { background-color: #EBDCB2; }
@@ -75,30 +73,12 @@
         .c-purple3 { background-color: #9575CD; color: white; } .c-violet { background-color: #B86FCC; color: white; }
         .c-pink { background-color: #F48FB1; } .c-red { background-color: #F06292; color: white; }
 
-        /* 棋子與目標框 */
-        .token {
-            width: 60%; height: 60%; font-size: 10px; font-weight: 900;
-            display: flex; align-items: center; justify-content: center;
-            border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
-            color: white; text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-            grid-column-end: span 1; grid-row-end: span 1; place-self: center; z-index: 20;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .token.preview { opacity: 0.5; transform: scale(0.8); animation: pulse-preview 1s infinite; }
-        @keyframes pulse-preview { 0% {opacity:0.4;} 50% {opacity:0.8;} 100% {opacity:0.4;} }
-        .token-target { 
-            grid-column-end: span 1; grid-row-end: span 1; place-self: stretch;
-            background-color: transparent; border: 3px solid #FF4444; border-radius: 4px; z-index: 10;
-            animation: pulse-target 2s infinite; pointer-events: none;
-        }
-        @keyframes pulse-target { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.02); } 100% { opacity: 1; transform: scale(1); } }
-
         /* --- 右側面板 --- */
         .sidebar {
-            width: var(--sidebar-width); min-width: 280px; background: white; padding: 15px;
+            width: var(--sidebar-width); min-width: 300px; background: white; padding: 15px;
             border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; gap: 12px; height: 100%; overflow-y: auto;
         }
-        .info-card { background: #FFFDE7; border-left: 5px solid #FFD600; padding: 10px; border-radius: 6px; line-height: 1.4; color: #444; font-size: 14px; }
+        .info-card { background: #FFFDE7; border-left: 5px solid #FFD600; padding: 12px; border-radius: 6px; line-height: 1.4; color: #444; font-size: 15px; }
         .scenario-text { font-size: 1.1em; font-weight: bold; margin-top: 5px; color: #222; }
         .control-panel { background: #F8F9FA; padding: 12px; border-radius: 10px; border: 1px solid #E9ECEF; text-align: center; }
 
@@ -110,67 +90,57 @@
         .dice-area { display: flex; justify-content: center; align-items: center; height: 70px; margin: 10px 0; }
         .dice-box {
             width: 60px; height: 60px; background: white; border: 2px solid #333; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: #333;
-            box-shadow: 0 3px 0 #333; cursor: pointer; transition: all 0.1s; user-select: none; touch-action: manipulation;
+            display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; color: #1976D2;
+            box-shadow: 0 3px 0 #333; cursor: pointer; transition: all 0.1s; user-select: none;
         }
         .dice-box:active { transform: translateY(3px); box-shadow: 0 0 0 #333; }
         .dice-box.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-        .dice-label { font-size: 12px; color: #666; margin-top: 5px; }
+        .dice-label { font-size: 13px; color: #666; margin-top: 5px; font-weight: bold; }
 
         .btn-main { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 15px; font-weight: bold; color: white; cursor: pointer; transition: transform 0.1s; }
         .btn-main:active { transform: scale(0.98); }
         .bg-green { background: #388E3C; } .bg-green:hover { background: #2E7D32; }
         .bg-blue { background: #1976D2; } .bg-blue:hover { background: #1565C0; }
-        .bg-red { background: #D32F2F; } .bg-red:hover { background: #C62828; }
-        .bg-disabled { background: #BDBDBD; cursor: not-allowed; }
 
-        .player-status-row { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .player-status-row.active { background: #E3F2FD; border-radius: 8px; border-bottom: none; font-weight: bold; }
+        .status-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
         
-        /* 彈出視窗與新按鈕樣式 */
+        /* 彈出視窗樣式 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
             z-index: 1000; padding: 20px;
         }
         .modal-box {
-            background: white; padding: 25px; border-radius: 12px; max-width: 450px; width: 100%;
+            background: white; padding: 25px; border-radius: 12px; max-width: 500px; width: 100%;
             text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s ease;
             max-height: 90vh; overflow-y: auto;
         }
         @keyframes popIn { from {transform: scale(0.8); opacity: 0;} to {transform: scale(1); opacity: 1;} }
 
-        /* 溫度計滑桿樣式 */
-        input[type=range] {
-            -webkit-appearance: none; width: 100%; background: transparent; 
-        }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%;
-            background: #FF4444; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        input[type=range]::-webkit-slider-runnable-track {
-            width: 100%; height: 8px; cursor: pointer; background: #ddd; border-radius: 4px;
-        }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #FF4444; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #ddd; border-radius: 4px; }
 
-        /* 行動與支援按鈕 */
-        .btn-action, .btn-support {
+        .btn-option {
             width: 100%; padding: 12px 15px; margin-bottom: 8px; border: 2px solid #E0E0E0;
             border-radius: 8px; background: white; font-size: 15px; font-weight: bold; color: #444;
-            cursor: pointer; text-align: left; transition: all 0.2s; display: flex; justify-content: space-between;
+            cursor: pointer; text-align: left; transition: all 0.2s;
         }
-        .btn-action:hover { border-color: #1976D2; background: #E3F2FD; color: #1976D2; }
-        .btn-support:hover { border-color: #388E3C; background: #E8F5E9; color: #2E7D32; }
+        .btn-option:hover { border-color: #1976D2; background: #E3F2FD; color: #1976D2; }
         
-        .thought-card { border: 1px solid #ddd; border-left: 5px solid #ccc; padding: 10px; margin-bottom: 8px; border-radius: 4px; background: #f9f9f9; font-size: 14px; }
-        .thought-title { font-weight: bold; margin-bottom: 4px; }
-        .thought-desc { font-size: 13px; color: #555; }
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #333; color: white; padding: 12px 24px; border-radius: 8px;
+            z-index: 2000; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            opacity: 0; transition: opacity 0.3s; pointer-events: none;
+        }
 
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <h1>🧪 情緒元素實驗室</h1>
+    <h1>🕵️‍♂️ 情緒偵探實驗室</h1>
 
     <div class="main-container">
         <div class="map-wrapper">
@@ -178,16 +148,15 @@
                 <div class="corner-label" style="grid-column: 1; grid-row: 1;">
                     <span class="corner-arrow-h">族 ➡</span><span class="corner-arrow-v">週期 ⬇</span>
                 </div>
-                <div id="target-container"></div>
             </div>
         </div>
 
         <div class="sidebar">
             <div id="phase-start">
-                <h3>👋 歡迎來到情緒元素實驗室</h3>
-                <p>一起來探索情緒地圖，看看你會走到哪裡？</p>
+                <h3>👋 歡迎偵探們</h3>
+                <p>一起從客觀的事件中，找出隱藏的 3 個情緒線索！</p>
                 <div class="control-panel" style="margin-top:15px; text-align:left;">
-                    <label style="font-weight:bold; color:#333; font-size:14px;">選擇玩家人數：</label>
+                    <label style="font-weight:bold; color:#333; font-size:14px;">選擇偵探人數：</label>
                     <div class="player-select-grid">
                         <div class="p-btn" onclick="selectPlayerNum(1, this)">1人</div>
                         <div class="p-btn" onclick="selectPlayerNum(2, this)">2人</div>
@@ -197,43 +166,38 @@
                         <div class="p-btn" onclick="selectPlayerNum(6, this)">6人</div>
                     </div>
                 </div>
-                <button class="btn-main bg-green" style="margin-top:10px;" onclick="startGame()">🎲 抽取情境並開始</button>
-            </div>
-
-            <div id="scenario-area" class="hidden">
-                <div class="info-card">
-                    <small>📍 當前生活情境</small>
-                    <div class="scenario-text" id="scenario-text">--</div>
-                </div>
-            </div>
-
-            <div id="phase-placement" class="hidden">
-                <div class="control-panel">
-                    <h3 id="placement-title" style="margin:0 0 10px 0;">請 玩家 A 選擇位置</h3>
-                    <p style="color:#666; font-size:13px; margin-bottom:15px;">點擊地圖格子，然後按下確認</p>
-                    <button id="btn-confirm-pos" class="btn-main bg-disabled" onclick="confirmPlacement()">✅ 確認位置</button>
-                </div>
+                <button class="btn-main bg-green" style="margin-top:10px;" onclick="startGame()">🔍 抽取案件並開始</button>
             </div>
 
             <div id="phase-playing" class="hidden">
-                <div class="control-panel">
+                <div class="info-card">
+                    <small>📍 案件現場 (客觀事件)</small>
+                    <div class="scenario-text" id="scenario-text">--</div>
+                </div>
+
+                <div class="control-panel" style="margin-top:15px;">
                     <div style="font-size:1.1em; font-weight:bold; margin-bottom:5px;">
-                        輪到：<span id="turn-display" style="color:#1976D2;">--</span>
+                        目前的偵探：<span id="turn-display" style="color:#1976D2; font-size:1.3em;">--</span>
                     </div>
-                    <div class="dice-area"><div id="dice-btn" class="dice-box" onclick="rollDice()">🎲</div></div>
-                    <div class="dice-label">點擊骰子自動導航</div>
+                    
+                    <div id="dice-container">
+                        <div class="dice-area"><div id="dice-btn" class="dice-box" onclick="rollDice()">?</div></div>
+                        <div class="dice-label">點擊骰子換下一位偵探</div>
+                    </div>
+
+                    <p style="font-size:13px; color:#D32F2F; font-weight:bold; margin-top:15px;">👉 輪到你時，請直接點擊地圖猜測情緒！</p>
                 </div>
+
                 <div style="margin-top:15px;">
-                    <h4 style="margin:0 0 10px 0;">📊 玩家狀態</h4>
-                    <div id="player-list"></div>
-                </div>
-                <div style="margin-top:auto;">
-                    <hr style="margin:15px 0;">
-                    <button class="btn-main bg-red" onclick="endGameManually()">🏁 手動結束顯示所有結果</button>
+                    <h4 style="margin:0 0 10px 0;">🔍 破案進度 (<span id="found-count">0</span>/3)</h4>
+                    <div id="found-list" style="display:flex; flex-direction:column; gap:5px;">
+                        </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="toast-msg" class="toast">這也是一種可能，但這次當事人不是這個感覺喔！</div>
 
     <div id="modal-container" class="modal-overlay hidden">
         <div id="modal-content" class="modal-box"></div>
@@ -242,24 +206,13 @@
     <script src="scenarios.js"></script>
 
     <script>
-        const allPlayerConfig = [
-            { id: 0, name: "玩家 A", icon: "A", color: "#d32f2f" },
-            { id: 1, name: "玩家 B", icon: "B", color: "#1976d2" },
-            { id: 2, name: "玩家 C", icon: "C", color: "#388e3c" },
-            { id: 3, name: "玩家 D", icon: "D", color: "#fbc02d" },
-            { id: 4, name: "玩家 E", icon: "E", color: "#8e24aa" }, 
-            { id: 5, name: "玩家 F", icon: "F", color: "#f57c00" }  
-        ];
-
-        let players = [];
+        const playerNames = ["A", "B", "C", "D", "E", "F"];
         let numPlayers = 4;
         let state = "INIT"; 
         let currentScenarioObj = null;
         let activeTargets = []; 
-        let activeTargetCoords = []; 
-        let placementIndex = 0;
+        let foundTargets = [];
         let turnIndex = 0;
-        let pendingPos = null;
         let isDiceRolling = false;
 
         window.onload = function() { renderBoard(); };
@@ -272,12 +225,7 @@
 
         function renderBoard() {
             const board = document.getElementById("board");
-            board.innerHTML = "";
-            let corner = document.createElement("div");
-            corner.className = "corner-label";
-            corner.style.gridColumn = 1; corner.style.gridRow = 1;
-            corner.innerHTML = '<span class="corner-arrow-h">族 ➡</span><span class="corner-arrow-v">週期 ⬇</span>';
-            board.appendChild(corner);
+            board.innerHTML = '<div class="corner-label" style="grid-column: 1; grid-row: 1;"><span class="corner-arrow-h">族 ➡</span><span class="corner-arrow-v">週期 ⬇</span></div>';
 
             for(let c=1; c<=18; c++) { let div = document.createElement("div"); div.className = "axis-label"; div.textContent = c; div.style.gridColumn = c + 1; div.style.gridRow = 1; board.appendChild(div); }
             for(let r=1; r<=6; r++) { let div = document.createElement("div"); div.className = "axis-label"; div.textContent = r; div.style.gridColumn = 1; div.style.gridRow = r + 1; board.appendChild(div); }
@@ -291,173 +239,136 @@
 
             Object.values(cellMap).forEach(e => {
                 let div = document.createElement("div");
-                div.className = "element-cell " + e.cat; div.style.gridColumn = e.col + 1; div.style.gridRow = e.row + 1;
+                div.className = "element-cell " + e.cat; 
+                div.id = "cell-" + e.names.join("-");
+                div.style.gridColumn = e.col + 1; div.style.gridRow = e.row + 1;
                 div.innerHTML = e.names.join("<br>");
                 if (e.names.length > 1 || e.names[0].length >= 4) div.style.fontSize = "12px"; 
-                div.onclick = () => onCellClick(e);
+                div.onclick = () => onCellClick(e.names);
                 board.appendChild(div);
             });
-            const tContainer = document.createElement("div"); tContainer.id = "target-container"; board.appendChild(tContainer);
         }
 
         function startGame() {
-            players = allPlayerConfig.slice(0, numPlayers).map(p => ({...p, pos: null}));
             document.getElementById("phase-start").classList.add("hidden");
-            document.getElementById("scenario-area").classList.remove("hidden");
-            document.getElementById("phase-placement").classList.remove("hidden");
+            document.getElementById("phase-playing").classList.remove("hidden");
+            
+            // 單人遊玩時隱藏換人骰子
+            if (numPlayers === 1) {
+                document.getElementById("dice-container").classList.add("hidden");
+                turnIndex = 0;
+            } else {
+                document.getElementById("dice-container").classList.remove("hidden");
+                turnIndex = Math.floor(Math.random() * numPlayers);
+                document.getElementById("dice-btn").textContent = playerNames[turnIndex];
+            }
+            
             setupScenario();
         }
 
         function setupScenario() {
             currentScenarioObj = scenarios[Math.floor(Math.random() * scenarios.length)];
-            document.getElementById("scenario-text").innerHTML = currentScenarioObj.text;
-
-            activeTargets = []; activeTargetCoords = [];
-            currentScenarioObj.targets.forEach(t => {
-                const elData = emotionData.find(e => e.name === t.name);
-                if (elData) { activeTargets.push({ ...t, ...elData }); activeTargetCoords.push({ col: elData.col, row: elData.row }); }
+            document.getElementById("scenario-text").textContent = currentScenarioObj.text;
+            
+            activeTargets = currentScenarioObj.targets;
+            foundTargets = [];
+            
+            updateUI();
+            
+            document.querySelectorAll(".element-cell").forEach(el => {
+                el.classList.add("selectable");
+                el.classList.remove("found");
             });
-
-            state = "PLACEMENT"; placementIndex = 0; updatePlacementUI();
-            players.forEach(p => p.pos = null);
-            document.querySelectorAll(".token").forEach(t => t.remove());
-            document.querySelectorAll(".element-cell").forEach(el => el.classList.add("selectable"));
-            document.getElementById("target-container").innerHTML = "";
         }
 
-        function onCellClick(data) {
-            if (state !== "PLACEMENT") return;
-            pendingPos = { col: data.col, row: data.row };
-            document.querySelectorAll(".token.preview").forEach(t => t.remove());
-            const p = players[placementIndex];
-            const token = document.createElement("div"); token.className = "token preview"; token.textContent = p.icon; token.style.backgroundColor = p.color;
-            token.style.gridColumn = pendingPos.col + 1; token.style.gridRow = pendingPos.row + 1; document.getElementById("board").appendChild(token);
-
-            const btn = document.getElementById("btn-confirm-pos");
-            btn.classList.remove("bg-disabled"); btn.classList.add("bg-blue"); btn.textContent = `✅ 確認 ${p.name} 的位置`;
-        }
-
-        function confirmPlacement() {
-            if (!pendingPos) return;
-            const p = players[placementIndex]; p.pos = pendingPos; pendingPos = null;
-            document.querySelectorAll(".token.preview").forEach(t => t.remove()); updatePlayerToken(p);
-            const btn = document.getElementById("btn-confirm-pos"); btn.classList.add("bg-disabled"); btn.classList.remove("bg-blue"); btn.textContent = "請先點選地圖";
-
-            placementIndex++;
-            if (placementIndex >= players.length) {
-                state = "PLAYING";
-                document.getElementById("phase-placement").classList.add("hidden");
-                document.getElementById("phase-playing").classList.remove("hidden");
-                document.querySelectorAll(".element-cell").forEach(el => el.classList.remove("selectable"));
-                turnIndex = 0; updateTurnInfo(); renderPlayerList();
-            } else { updatePlacementUI(); }
-        }
-
-        function updatePlacementUI() {
-            const p = players[placementIndex];
-            document.getElementById("placement-title").innerHTML = `請 <span style="color:${p.color}">${p.name}</span> 選擇位置`;
+        function updateUI() {
+            document.getElementById("turn-display").textContent = `玩家 ${playerNames[turnIndex]}`;
+            document.getElementById("found-count").textContent = foundTargets.length;
+            
+            const list = document.getElementById("found-list");
+            list.innerHTML = "";
+            if (foundTargets.length === 0) {
+                list.innerHTML = '<div style="color:#999; font-size:13px; text-align:center;">尚未找到線索</div>';
+            } else {
+                foundTargets.forEach(t => {
+                    list.innerHTML += `<div style="background:#E8F5E9; padding:8px; border-radius:6px; font-weight:bold; color:#2E7D32;">✅ ${t.name}</div>`;
+                });
+            }
         }
 
         function rollDice() {
-            if (isDiceRolling || state !== "PLAYING") return;
+            if (isDiceRolling || numPlayers === 1) return;
             isDiceRolling = true;
-            const diceBox = document.getElementById("dice-btn"); diceBox.classList.add("disabled");
+            const diceBox = document.getElementById("dice-btn"); 
+            diceBox.classList.add("disabled");
             let rolls = 0;
             const interval = setInterval(() => {
-                diceBox.textContent = Math.floor(Math.random() * 6) + 1;
+                diceBox.textContent = playerNames[Math.floor(Math.random() * numPlayers)];
                 rolls++;
-                if (rolls > 10) { clearInterval(interval); const finalStep = Math.floor(Math.random() * 6) + 1; diceBox.textContent = finalStep; setTimeout(() => doAutoMove(finalStep), 500); }
+                if (rolls > 10) { 
+                    clearInterval(interval); 
+                    turnIndex = Math.floor(Math.random() * numPlayers); 
+                    diceBox.textContent = playerNames[turnIndex];
+                    updateUI();
+                    isDiceRolling = false; 
+                    diceBox.classList.remove("disabled"); 
+                }
             }, 80);
         }
 
-        async function doAutoMove(steps) {
-            const p = players[turnIndex];
-            let hasWon = false; let finalTarget = null;
-            for (let i = 0; i < steps; i++) {
-                const hitTarget = activeTargets.find(t => t.col === p.pos.col && t.row === p.pos.row);
-                if (hitTarget) { hasWon = true; finalTarget = hitTarget; break; }
-                let nextPos = getNextStepBFS(p.pos, activeTargetCoords);
-                if (nextPos) { p.pos = nextPos; updatePlayerToken(p); await new Promise(r => setTimeout(r, 300)); } 
-                else { break; }
-            }
-            if (!hasWon) {
-                const hitTarget = activeTargets.find(t => t.col === p.pos.col && t.row === p.pos.row);
-                if (hitTarget) { hasWon = true; finalTarget = hitTarget; }
-            }
-            document.getElementById("dice-btn").classList.remove("disabled"); document.getElementById("dice-btn").textContent = "🎲"; isDiceRolling = false;
+        // 玩家直接點擊地圖猜測
+        function onCellClick(cellEmotionNames) {
+            if (isDiceRolling) return;
             
-            if (hasWon) { startAwarenessPhase(p, finalTarget); } 
-            else { turnIndex = (turnIndex + 1) % players.length; updateTurnInfo(); renderPlayerList(); }
-        }
-
-        function getNextStepBFS(startPos, targets) {
-            let queue = [{ pos: startPos, path: [] }]; let visited = new Set(); visited.add(`${startPos.col},${startPos.row}`);
-            while (queue.length > 0) {
-                let { pos, path } = queue.shift();
-                const neighbors = [ { col: pos.col, row: pos.row - 1 }, { col: pos.col, row: pos.row + 1 }, { col: pos.col - 1, row: pos.row }, { col: pos.col + 1, row: pos.row } ];
-                for (let next of neighbors) {
-                    if (targets.some(t => t.col === next.col && t.row === next.row)) return path.length === 0 ? next : path[0];
-                    const isValid = emotionData.some(e => e.col === next.col && e.row === next.row);
-                    const key = `${next.col},${next.row}`;
-                    if (isValid && !visited.has(key)) { visited.add(key); let newPath = [...path, next]; queue.push({ pos: next, path: newPath }); }
-                }
+            let hitTarget = null;
+            for (let name of cellEmotionNames) {
+                hitTarget = activeTargets.find(t => t.name === name && !foundTargets.includes(t));
+                if (hitTarget) break;
             }
-            return null;
-        }
 
-        // ================= 核心修改區塊 =================
+            if (hitTarget) {
+                // 猜對了！
+                foundTargets.push(hitTarget);
+                
+                // 標記地圖上的格子
+                const cellId = "cell-" + cellEmotionNames.join("-");
+                document.getElementById(cellId).classList.add("found");
 
-        // 💡 新增：自動根據「玩家選擇的行動」配對適合的「同理心支援選項」
-        function getDynamicSupportOptions(action) {
-            let options = [];
-            
-            if (action.includes("解決問題") || action.includes("整理")) {
-                options = ["問他「需要我幫忙嗎？」", "陪他一起想辦法", "幫他一起整理"];
-            } else if (action.includes("幫忙") || action.includes("聊一聊") || action.includes("說出來")) {
-                options = ["安靜且專心地聽他說", "對他說「我懂你的感覺」", "陪他一起去找老師"];
-            } else if (action.includes("深呼吸") || action.includes("數到10") || action.includes("正念")) {
-                options = ["給他一個安靜的空間", "對他說「慢慢來，沒關係」", "陪他一起慢慢深呼吸"];
-            } else if (action.includes("寫下來") || action.includes("撕成小塊")) {
-                options = ["幫他準備紙和筆", "遞給他一張衛生紙", "安靜地在旁邊陪他"];
-            } else if (action.includes("走一走") || action.includes("舒服的地方") || action.includes("拖延")) {
-                options = ["給他一點獨處的時間", "幫他看一下座位上的東西", "陪他一起去走一走"];
-            } else if (action.includes("食物") || action.includes("熱飲") || action.includes("做喜歡的事")) {
-                options = ["問他需不需要幫忙裝水", "給他一個支持的微笑", "不打擾他，讓他做自己的事"];
+                updateUI();
+                startCBTFlow(playerNames[turnIndex], hitTarget);
             } else {
-                // 預設支援 (針對其他未分類的行動)
-                options = ["對他說「我們都支持你」", "安靜地陪在他身邊", "輕輕拍拍他的肩膀"];
+                // 猜錯了
+                const toast = document.getElementById("toast-msg");
+                toast.style.opacity = "1";
+                setTimeout(() => toast.style.opacity = "0", 2000);
             }
-            
-            // 💡 強制加入「其他」選項
-            options.push("其他 (自己想一個支持方法)");
-            return options;
         }
 
-        // 階段 1：個人覺察 (溫度計 + 行動卡)
-        function startAwarenessPhase(player, targetEmotion) {
-            revealAllTargets();
+        // ================= CBT 認知重建與行動流程 =================
+        let currentTemp = 5;
+        let currentCBTTarget = null;
+        let currentPlayerName = "";
+
+        function startCBTFlow(playerName, targetEmotion) {
+            currentCBTTarget = targetEmotion;
+            currentPlayerName = playerName;
+            currentTemp = 5;
+            
             const modal = document.getElementById("modal-content");
             
-            let actionHtml = "";
-            if (targetEmotion.actions && targetEmotion.actions.length > 0) {
-                actionHtml = targetEmotion.actions.map(act => 
-                    `<button class="btn-action" onclick="handleActionSelect('${player.name}', '${targetEmotion.name}', '${act}')">▶ ${act}</button>`
-                ).join("");
-            }
-            actionHtml += `<button class="btn-action" onclick="handleActionSelect('${player.name}', '${targetEmotion.name}', '其他 (自己想一個)')">▶ 其他 (自己想一個)</button>`;
-
             modal.innerHTML = `
-                <h2 style="color:${player.color}; text-align:center; margin-top:0;">📍 ${player.name} 抵達「${targetEmotion.name}」</h2>
-                <div style="background:#f5f5f5; padding:10px; border-radius:8px; font-size:14px; color:#555; text-align:center; margin-bottom:15px;">
-                    "${targetEmotion.thought}"
+                <h2 style="color:#D32F2F; text-align:center; margin-top:0;">🎉 找到線索：${targetEmotion.name}</h2>
+                <div style="background:#f5f5f5; padding:15px; border-radius:8px; margin-bottom:15px;">
+                    <span style="font-size:12px; color:#888;">當事人腦中的自動化想法：</span><br>
+                    <strong style="color:#333; font-size:15px;">「${targetEmotion.thought}」</strong>
                 </div>
                 
                 <div style="margin: 20px 0; padding: 15px; background: #FFFDE7; border-left: 5px solid #FFD600; border-radius: 8px;">
-                    <h4 style="margin:0 0 10px 0; color:#333;">🌡️ 情緒溫度計 (1-10分)</h4>
-                    <p style="font-size:12px; margin-top:0; color:#666;">你現在感受到的「${targetEmotion.name}」有多強烈？請拉動滑桿：</p>
+                    <h4 style="margin:0 0 10px 0; color:#333;">🌡️ 評估情緒溫度 (1-10分)</h4>
+                    <p style="font-size:13px; color:#666; margin-top:0;">如果是你，這時候「${targetEmotion.name}」的感覺有多強烈？</p>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <span style="font-size:12px;">溫和 1</span>
-                        <input type="range" min="1" max="10" value="5" id="emotion-slider" style="flex:1;" oninput="document.getElementById('slider-val').innerText=this.value">
+                        <span style="font-size:12px;">輕微 1</span>
+                        <input type="range" min="1" max="10" value="5" id="emotion-slider" style="flex:1;" oninput="document.getElementById('slider-val').innerText=this.value; currentTemp=this.value;">
                         <span style="font-size:12px;">10 強烈</span>
                     </div>
                     <div style="text-align:center; font-weight:bold; font-size:1.2em; margin-top:10px; color:#D32F2F;">
@@ -465,144 +376,87 @@
                     </div>
                 </div>
 
-                <div>
-                    <h4 style="margin:0 0 10px 0;">🛠️ 你決定怎麼做？ (選擇一項行動)</h4>
-                    <div style="display:flex; flex-direction:column; gap:5px;">
-                        ${actionHtml}
-                    </div>
-                </div>
+                <button class="btn-main bg-blue" onclick="showAlternativeThoughts()">下一步：練習轉念</button>
             `;
             document.getElementById("modal-container").classList.remove("hidden");
         }
 
-        // 處理玩家選完行動後的邏輯
-        function handleActionSelect(playerName, emotionName, selectedAction) {
-            const tempValue = document.getElementById("emotion-slider").value;
+        function showAlternativeThoughts() {
             const modal = document.getElementById("modal-content");
+            
+            // 如果是正向情境，直接跳到行動選擇 (因為不需要轉念)
+            if (currentScenarioObj.type === "positive" || !currentCBTTarget.alternativeThoughts) {
+                showActions();
+                return;
+            }
 
-            if (currentScenarioObj.type === "negative") {
-                
-                // 💡 根據玩家選的行動，呼叫我們剛寫好的智能函數，取得適當的支援選項！
-                let currentSupportOptions = getDynamicSupportOptions(selectedAction);
-                
-                let supportHtml = currentSupportOptions.map(sup => 
-                    `<button class="btn-support" onclick="finishRound('${playerName}', '${sup}')">
-                        ${sup} <span style="font-size:1.2em;">👍</span>
-                    </button>`
-                ).join("");
+            let altHtml = currentCBTTarget.alternativeThoughts.map(alt => 
+                `<button class="btn-option" onclick="showActions()">💡 ${alt}</button>`
+            ).join("");
 
-                // 💡 標題改為「同理心支援」，提示詞改為「其他玩家想對你說：」
+            modal.innerHTML = `
+                <h2 style="color:#1976D2; text-align:center; margin-top:0;">🧠 擴展想法 (換個角度想)</h2>
+                <div style="margin-bottom:15px; padding:10px; border-left:4px solid #ccc; font-size:14px;">
+                    原本的想法：<span style="color:#888; text-decoration:line-through;">${currentCBTTarget.thought}</span>
+                </div>
+                <p style="font-weight:bold; color:#444;">選擇一個有幫助的「彈性想法」：</p>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    ${altHtml}
+                    <button class="btn-option" onclick="showActions()">💡 其他 (我自己想一個更棒的！)</button>
+                </div>
+            `;
+        }
+
+        function showActions() {
+            const modal = document.getElementById("modal-content");
+            
+            let actionHtml = currentCBTTarget.actions.map(act => 
+                `<button class="btn-option" onclick="finishCBTFlow()">▶ ${act}</button>`
+            ).join("");
+            actionHtml += `<button class="btn-option" onclick="finishCBTFlow()">▶ 其他 (我自己想一個行動)</button>`;
+
+            modal.innerHTML = `
+                <h2 style="color:#388E3C; text-align:center; margin-top:0;">🛠️ 採取行動</h2>
+                <p style="font-weight:bold; color:#444; text-align:center;">調整好想法後，你決定怎麼做？</p>
+                <div style="display:flex; flex-direction:column; gap:5px;">
+                    ${actionHtml}
+                </div>
+            `;
+        }
+
+        function finishCBTFlow() {
+            const modal = document.getElementById("modal-content");
+            
+            // 檢查是否三個都找齊了
+            if (foundTargets.length >= 3) {
                 modal.innerHTML = `
-                    <h2 style="color:#1976D2; text-align:center; margin-top:0;">🤝 同理心支援</h2>
-                    <div style="background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom:15px; border-left: 5px solid #1976D2; font-size:15px;">
-                        <span style="font-weight:bold; color:#1976D2;">${playerName}</span> 現在覺得 <strong>${emotionName}</strong> (溫度 <span style="color:#D32F2F; font-weight:bold;">${tempValue}</span> 分)<br>
-                        決定：<strong>${selectedAction}</strong>
-                    </div>
-                    
-                    <p style="color:#444; font-weight:bold; font-size:16px;">其他玩家想對你說：</p>
-                    <p style="color:#666; font-size:13px; margin-top:-10px;">(請由 ${playerName} 點擊最喜歡的支援給予讚！)</p>
-                    
-                    <div style="display:flex; flex-direction:column; gap:5px;">
-                        ${supportHtml}
+                    <h2 style="text-align:center; color:#E65100; margin-top:0;">🏆 恭喜全班破案！</h2>
+                    <p style="text-align:center; font-size:16px; margin:20px 0;">
+                        3 個隱藏的情緒線索都找出來了！<br>
+                        大家都是很棒的情緒偵探！
+                    </p>
+                    <div style="text-align:center; margin-top:20px;">
+                        <button class="btn-main bg-blue" onclick="nextRound()">🔄 挑戰下一題</button>
                     </div>
                 `;
             } else {
                 modal.innerHTML = `
-                    <h2 style="text-align:center; color:#388E3C; margin-top:0;">✨ 回合結束！</h2>
-                    <div style="text-align:center; font-size:18px; line-height:1.6; margin:20px 0;">
-                        <span style="font-weight:bold;">${playerName}</span> 覺得「<strong>${emotionName}</strong>」(溫度 <span style="color:#D32F2F; font-weight:bold;">${tempValue}</span> 分)<br>
-                        決定：<strong style="color:#1976D2;">${selectedAction}</strong>
+                    <h2 style="text-align:center; color:#1976D2; margin-top:0;">🗣️ 聽聽別人的想法</h2>
+                    <div style="background:#E3F2FD; padding:15px; border-radius:8px; margin:20px 0; text-align:center;">
+                        <p style="margin-top:0; color:#1976D2; font-weight:bold;">其他偵探們：</p>
+                        如果是你們遇到這個狀況，<br>你們會選擇哪個<strong style="color:#D32F2F;">「想法」</strong>或<strong style="color:#D32F2F;">「行動」</strong>呢？<br>
+                        <small style="color:#666;">(請直接開口分享)</small>
                     </div>
-                    <p style="text-align:center; color:#666; font-weight:bold;">很棒的情緒覺察與表達！</p>
                     <div style="text-align:center; margin-top:20px;">
-                        <button class="btn-main bg-blue" onclick="nextRound()">🔄 挑戰下一題 (重選人數)</button>
+                        <button class="btn-main bg-green" onclick="document.getElementById('modal-container').classList.add('hidden');">✔️ 分享完畢，繼續找下一個線索！</button>
                     </div>
                 `;
             }
-        }
-
-        // 結束回合 (同理心支援後)
-        function finishRound(playerName, supportGiven) {
-            const modal = document.getElementById("modal-content");
-            modal.innerHTML = `
-                <h2 style="text-align:center; color:#388E3C; margin-top:0;">💖 溫暖的支援！</h2>
-                <div style="text-align:center; font-size:18px; margin:20px 0;">
-                    ${playerName} 收到了大家的支援：<br>
-                    <strong style="color:#D32F2F; font-size:1.2em; display:inline-block; margin-top:10px;">「${supportGiven}」</strong>
-                </div>
-                <p style="text-align:center; color:#666;">謝謝大家的同理心！</p>
-                <div style="text-align:center; margin-top:20px;">
-                    <button class="btn-main bg-blue" onclick="nextRound()">🔄 挑戰下一題 (重選人數)</button>
-                </div>
-            `;
-        }
-
-        // ===================================================
-
-        function endGameManually() {
-            revealAllTargets();
-            const modal = document.getElementById("modal-content");
-            let html = `<h2 style="text-align:center; color:#666; margin-top:0;">🏁 遊戲手動結算</h2><p style="text-align:center; color:#666; font-size:14px;">這題情境的所有可能結果如下：</p><div style="max-height: 300px; overflow-y: auto;">`;
-            
-            activeTargets.forEach(t => {
-                html += `
-                    <div class="thought-card">
-                        <div class="thought-title">${t.name}</div>
-                        <div class="thought-desc">${t.thought}</div>
-                    </div>
-                `;
-            });
-            html += `</div><div style="margin-top:20px; text-align:center;"><button class="btn-main bg-blue" onclick="nextRound()">🔄 挑戰下一題</button></div>`;
-            modal.innerHTML = html;
-            document.getElementById("modal-container").classList.remove("hidden");
-        }
-
-        function revealAllTargets() {
-            const container = document.getElementById("target-container"); container.innerHTML = "";
-            activeTargets.forEach(t => {
-                const div = document.createElement("div"); div.className = "token-target"; div.style.gridColumn = t.col + 1; div.style.gridRow = t.row + 1; container.appendChild(div);
-            });
         }
 
         function nextRound() {
             document.getElementById("modal-container").classList.add("hidden");
-            document.getElementById("phase-playing").classList.add("hidden");
-            document.getElementById("scenario-area").classList.add("hidden");
-            document.getElementById("phase-placement").classList.add("hidden");
-            document.getElementById("phase-start").classList.remove("hidden");
-            document.getElementById("target-container").innerHTML = "";
-        }
-
-        function updatePlayerToken(p) {
-            let token = document.getElementById("p-token-" + p.id);
-            if (!token) {
-                token = document.createElement("div"); token.id = "p-token-" + p.id; token.className = "token"; token.textContent = p.icon; token.style.backgroundColor = p.color; document.getElementById("board").appendChild(token);
-            }
-            token.style.gridColumn = p.pos.col + 1; token.style.gridRow = p.pos.row + 1;
-
-            const offset = 14; 
-            const positions = [ `translate(-${offset}px, -${offset}px)`, `translate(${offset}px, -${offset}px)`, `translate(-${offset}px, ${offset}px)`, `translate(${offset}px, ${offset}px)`, `translate(0px, -${offset}px)`, `translate(0px, ${offset}px)` ];
-            let transform = positions[p.id % 6];
-            
-            if (state === "PLAYING" && turnIndex === p.id) {
-                token.style.zIndex = 100; token.style.transform = transform + " scale(1.3)"; token.style.boxShadow = "0 0 8px rgba(0,0,0,0.6)"; token.style.border = "2px solid #333";
-            } else {
-                token.style.zIndex = 20; token.style.transform = transform + " scale(1.0)"; token.style.boxShadow = "none"; token.style.border = "2px solid #fff";
-            }
-        }
-
-        function updateTurnInfo() {
-            const p = players[turnIndex]; const span = document.getElementById("turn-display"); span.textContent = `${p.name} (${p.icon})`; span.style.color = p.color;
-            players.forEach(pl => { if (pl.pos) updatePlayerToken(pl); });
-        }
-
-        function renderPlayerList() {
-            const list = document.getElementById("player-list"); list.innerHTML = "";
-            players.forEach((p, idx) => {
-                const item = document.createElement("div"); item.className = "player-status-row " + (idx === turnIndex ? "active" : "");
-                item.innerHTML = `<div style="flex:1;"><span style="font-weight:bold; color:${p.color}">${p.icon} ${p.name}</span></div><div style="font-size:14px; color:#666;">${(p.pos && activeTargetCoords.length > 0) ? '探索中...' : '等待中'}</div>`;
-                list.appendChild(item);
-            });
+            startGame(); // 直接重抽下一題
         }
     </script>
 </body>
