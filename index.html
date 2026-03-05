@@ -242,7 +242,6 @@
     <script src="scenarios.js"></script>
 
     <script>
-        // 玩家原型
         const allPlayerConfig = [
             { id: 0, name: "玩家 A", icon: "A", color: "#d32f2f" },
             { id: 1, name: "玩家 B", icon: "B", color: "#1976d2" },
@@ -250,14 +249,6 @@
             { id: 3, name: "玩家 D", icon: "D", color: "#fbc02d" },
             { id: 4, name: "玩家 E", icon: "E", color: "#8e24aa" }, 
             { id: 5, name: "玩家 F", icon: "F", color: "#f57c00" }  
-        ];
-
-        // 固定的同理心支援卡片選項
-        const supportOptions = [
-            "遞一張衛生紙", 
-            "對他說「我懂你的感覺」", 
-            "安靜地陪在他身邊", 
-            "輕輕拍拍他的肩膀"
         ];
 
         let players = [];
@@ -319,7 +310,6 @@
 
         function setupScenario() {
             currentScenarioObj = scenarios[Math.floor(Math.random() * scenarios.length)];
-            // 💡 修改點 1：移除了「正向情境」的提示文字，直接顯示純情境內容
             document.getElementById("scenario-text").innerHTML = currentScenarioObj.text;
 
             activeTargets = []; activeTargetCoords = [];
@@ -417,12 +407,37 @@
 
         // ================= 核心修改區塊 =================
 
+        // 💡 新增：自動根據「玩家選擇的行動」配對適合的「同理心支援選項」
+        function getDynamicSupportOptions(action) {
+            let options = [];
+            
+            if (action.includes("解決問題") || action.includes("整理")) {
+                options = ["問他「需要我幫忙嗎？」", "陪他一起想辦法", "幫他一起整理"];
+            } else if (action.includes("幫忙") || action.includes("聊一聊") || action.includes("說出來")) {
+                options = ["安靜且專心地聽他說", "對他說「我懂你的感覺」", "陪他一起去找老師"];
+            } else if (action.includes("深呼吸") || action.includes("數到10") || action.includes("正念")) {
+                options = ["給他一個安靜的空間", "對他說「慢慢來，沒關係」", "陪他一起慢慢深呼吸"];
+            } else if (action.includes("寫下來") || action.includes("撕成小塊")) {
+                options = ["幫他準備紙和筆", "遞給他一張衛生紙", "安靜地在旁邊陪他"];
+            } else if (action.includes("走一走") || action.includes("舒服的地方") || action.includes("拖延")) {
+                options = ["給他一點獨處的時間", "幫他看一下座位上的東西", "陪他一起去走一走"];
+            } else if (action.includes("食物") || action.includes("熱飲") || action.includes("做喜歡的事")) {
+                options = ["問他需不需要幫忙裝水", "給他一個支持的微笑", "不打擾他，讓他做自己的事"];
+            } else {
+                // 預設支援 (針對其他未分類的行動)
+                options = ["對他說「我們都支持你」", "安靜地陪在他身邊", "輕輕拍拍他的肩膀"];
+            }
+            
+            // 💡 強制加入「其他」選項
+            options.push("其他 (自己想一個支持方法)");
+            return options;
+        }
+
         // 階段 1：個人覺察 (溫度計 + 行動卡)
         function startAwarenessPhase(player, targetEmotion) {
             revealAllTargets();
             const modal = document.getElementById("modal-content");
             
-            // 💡 修改點 3：生成三個行動按鈕的 HTML，並強制加上第四個「其他 (自己想一個)」的選項
             let actionHtml = "";
             if (targetEmotion.actions && targetEmotion.actions.length > 0) {
                 actionHtml = targetEmotion.actions.map(act => 
@@ -465,22 +480,23 @@
             const tempValue = document.getElementById("emotion-slider").value;
             const modal = document.getElementById("modal-content");
 
-            // 判斷是正向還是負向情境
             if (currentScenarioObj.type === "negative") {
-                // 階段 2：同理心支援 (僅限負向情境)
                 
-                // 動態生成支援卡片 HTML
-                let supportHtml = supportOptions.map(sup => 
+                // 💡 根據玩家選的行動，呼叫我們剛寫好的智能函數，取得適當的支援選項！
+                let currentSupportOptions = getDynamicSupportOptions(selectedAction);
+                
+                let supportHtml = currentSupportOptions.map(sup => 
                     `<button class="btn-support" onclick="finishRound('${playerName}', '${sup}')">
                         ${sup} <span style="font-size:1.2em;">👍</span>
                     </button>`
                 ).join("");
 
+                // 💡 標題改為「同理心支援」，提示詞改為「其他玩家想對你說：」
                 modal.innerHTML = `
-                    <h2 style="color:#1976D2; text-align:center; margin-top:0;">🤝 實體同理心支援</h2>
+                    <h2 style="color:#1976D2; text-align:center; margin-top:0;">🤝 同理心支援</h2>
                     <div style="background: #E3F2FD; padding: 12px; border-radius: 8px; margin-bottom:15px; border-left: 5px solid #1976D2; font-size:15px;">
                         <span style="font-weight:bold; color:#1976D2;">${playerName}</span> 現在覺得 <strong>${emotionName}</strong> (溫度 <span style="color:#D32F2F; font-weight:bold;">${tempValue}</span> 分)<br>
-                        他決定：<strong>${selectedAction}</strong>
+                        決定：<strong>${selectedAction}</strong>
                     </div>
                     
                     <p style="color:#444; font-weight:bold; font-size:16px;">其他玩家想對你說：</p>
@@ -491,7 +507,6 @@
                     </div>
                 `;
             } else {
-                // 正向情境：選完行動直接結算
                 modal.innerHTML = `
                     <h2 style="text-align:center; color:#388E3C; margin-top:0;">✨ 回合結束！</h2>
                     <div style="text-align:center; font-size:18px; line-height:1.6; margin:20px 0;">
