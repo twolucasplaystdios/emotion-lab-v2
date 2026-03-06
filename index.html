@@ -63,7 +63,6 @@
         .element-cell.selectable:hover { transform: scale(1.1); z-index: 5; box-shadow: 0 0 5px rgba(0,0,0,0.3); }
         .element-cell.found { box-shadow: 0 0 0 3px #FF4444; animation: popIn 0.3s ease; }
         
-        /* 💡 猜錯的視覺標示 (灰底、虛線) */
         .element-cell.guessed {
             opacity: 0.4; background-color: #e0e0e0 !important; color: #888;
             box-shadow: none; border: 2px dashed #aaa; cursor: not-allowed;
@@ -392,9 +391,14 @@
             currentTemp = 5;
             const modal = document.getElementById("modal-content");
             
-            // 💡 生成行動選項 (固定將轉念放第一個)
-            let actionHtml = `<button class="btn-option" style="border-color:#1976D2; color:#1976D2;" onclick="showAlternativeThoughts()">💡 換個想法想想這件事情</button>`;
+            let actionHtml = "";
             
+            // 💡 只有負向情境，才會顯示「換個想法」的選項
+            if (currentScenarioObj.type === "negative") {
+                actionHtml += `<button class="btn-option" style="border-color:#1976D2; color:#1976D2;" onclick="showAlternativeThoughts()">💡 換個想法想想這件事情</button>`;
+            }
+            
+            // 加上原本題庫的行動選項
             if (targetEmotion.actions && targetEmotion.actions.length > 0) {
                 targetEmotion.actions.forEach(act => {
                     actionHtml += `<button class="btn-option" onclick="finishCBTFlow()">▶ ${act}</button>`;
@@ -402,7 +406,6 @@
             }
             actionHtml += `<button class="btn-option" onclick="finishCBTFlow()">▶ 其他 (我自己想一個)</button>`;
 
-            // 💡 保留第一人稱的提問方式與溫度計
             modal.innerHTML = `
                 <h2 style="color:#D32F2F; text-align:center; margin-top:0;">🎉 找到線索：${targetEmotion.name}</h2>
                 <div style="background:#f5f5f5; padding:15px; border-radius:8px; margin-bottom:15px;">
@@ -436,58 +439,4 @@
             const modal = document.getElementById("modal-content");
             
             let altHtml = "";
-            if (currentCBTTarget.alternativeThoughts && currentCBTTarget.alternativeThoughts.length > 0) {
-                altHtml = currentCBTTarget.alternativeThoughts.map(alt => 
-                    `<button class="btn-option" onclick="finishCBTFlow()">💡 ${alt}</button>`
-                ).join("");
-            }
-            altHtml += `<button class="btn-option" onclick="finishCBTFlow()">💡 其他 (我自己想一個更棒的！)</button>`;
-
-            modal.innerHTML = `
-                <h2 style="color:#1976D2; text-align:center; margin-top:0;">🧠 換個想法</h2>
-                <div style="margin-bottom:15px; padding:10px; border-left:4px solid #ccc; font-size:14px; background:#f9f9f9;">
-                    原本的想法：<span style="color:#888; text-decoration:line-through;">${currentCBTTarget.thought}</span>
-                </div>
-                <p style="font-weight:bold; color:#444; text-align:center;">請選擇一個對你更有幫助的想法：</p>
-                <div style="display:flex; flex-direction:column; gap:8px;">
-                    ${altHtml}
-                </div>
-            `;
-        }
-
-        // 💡 完成行動或轉念後的結算畫面
-        function finishCBTFlow() {
-            const modal = document.getElementById("modal-content");
-            
-            if (foundTargets.length >= 3) {
-                modal.innerHTML = `
-                    <h2 style="text-align:center; color:#E65100; margin-top:0;">🏆 恭喜破案！</h2>
-                    <p style="text-align:center; font-size:16px; margin:20px 0;">
-                        3 個隱藏的情緒線索都找出來了！<br>
-                        大家都是很棒的情緒偵探！
-                    </p>
-                    <div style="text-align:center; margin-top:20px;">
-                        <button class="btn-main bg-blue" onclick="nextRound()">🔄 挑戰下一題</button>
-                    </div>
-                `;
-            } else {
-                modal.innerHTML = `
-                    <h2 style="text-align:center; color:#388E3C; margin-top:0;">✅ 選擇完成！</h2>
-                    <p style="text-align:center; font-size:16px; margin:20px 0;">
-                        很棒的自我覺察與行動策略！<br>
-                        請點擊骰子換下一位偵探繼續搜查！
-                    </p>
-                    <div style="text-align:center; margin-top:20px;">
-                        <button class="btn-main bg-green" onclick="document.getElementById('modal-container').classList.add('hidden');">✔️ 繼續搜查</button>
-                    </div>
-                `;
-            }
-        }
-
-        function nextRound() {
-            document.getElementById("modal-container").classList.add("hidden");
-            startGame(); // 直接重抽下一題
-        }
-    </script>
-</body>
-</html>
+            if (currentCBTTarget.alternative
