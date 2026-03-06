@@ -201,7 +201,7 @@
         </div>
     </div>
 
-    <div id="toast-msg" class="toast">這也是一種可能，但這次當事人不是這個感覺喔！</div>
+    <div id="toast-msg" class="toast">再試試看</div>
 
     <div id="modal-container" class="modal-overlay hidden">
         <div id="modal-content" class="modal-box"></div>
@@ -347,8 +347,9 @@
             
             if (numPlayers === 1) remainingGuesses = 2; 
 
+            // 💡 若次數用完點擊，提示換人
             if (remainingGuesses <= 0) {
-                showToast("你的猜測次數用完囉！請點擊骰子換下一位。");
+                showToast("擲骰子換下一個玩家猜猜看");
                 return;
             }
 
@@ -374,10 +375,11 @@
                 remainingGuesses--;
                 updateUI();
                 
+                // 💡 猜錯時的溫和提示
                 if (remainingGuesses <= 0 && numPlayers > 1) {
-                    showToast("這不是當事人的感覺。你的次數用完了，請換下一位！");
+                    showToast("擲骰子換下一個玩家猜猜看");
                 } else {
-                    showToast("這不是當事人的感覺，你還有 1 次機會！");
+                    showToast("再試試看");
                 }
             }
         }
@@ -419,7 +421,7 @@
             document.getElementById("modal-container").classList.remove("hidden");
         }
 
-        // 步驟二：顯示行動清單 (若點擊「換個想法」，則進入步驟三；點其他的直接結束)
+        // 步驟二：顯示行動清單
         function showActions() {
             const modal = document.getElementById("modal-content");
             
@@ -430,7 +432,6 @@
                 actionHtml += `<button class="btn-option" style="border-color:#1976D2; color:#1976D2;" onclick="showAlternativeThoughts()">💡 換個想法想想這件事情</button>`;
             }
             
-            // 加上原本題庫的行動選項 (點擊後直接執行 finishCBTFlow)
             if (currentCBTTarget.actions && currentCBTTarget.actions.length > 0) {
                 currentCBTTarget.actions.forEach(act => {
                     actionHtml += `<button class="btn-option" onclick="finishCBTFlow()">▶ ${act}</button>`;
