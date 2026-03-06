@@ -1,19 +1,45 @@
 // --- 1. 匯入 emotion.js ---
 import {emotonData} from './emotion';
 
+// --- 2. 情境 (轉為生成式，因為情境多元) ---
 
-// --- 2. 情境 (因為效率因素轉為生成，情境有274行，又很單調) ---
+var initialData = [
+    {
+        type: [0.1,0.0,0.9], // 一定要是 float。
+        text: "你走進教室時，看到同學在座位上小聲講話，接著他們發出笑聲。", // 不要針對我 >:(
+        targets: Array.from({length: 3}, targetGen())
+    },
+    {
+        type: [0.0,1.0,0.0], // 一定要是 float。
+        text: "理化課老師宣布接下來要分組做實驗，需要跟其他同學共用實驗器材。", // 
+        targets: Array.from({length: 3}, targetGen())
+    },
+    {
+        type: [0.0,0.5,0.5], // 一定要是 float。
+        text: "老師在上課時講話的聲音變大，語氣變得比較嚴肅。", // 
+        targets: Array.from({length: 3}, targetGen())
+    },
+]
 
-const targetGen = (tLabel, tThought, tActions) => {
-    // t 指的是 target。
+
+function targetGen (sPoints) {
+    // 以下 3 行 t 指的是 target。
+    var tLabel;
+    var tThought;
+    var tActions;
     return {name: tLabel, thought: tThought, actions: tActions};
 }
 
-const scenarioGen = (scenarioType, scenarioContext, scenarioTargetCount = 3) => {
+
+
+function scenarioGen (scenarioContext, sTargetCount = 3) {
+
+    var scenarioType = [0, 0, 0];
+
     return {
         type: scenarioType,
         text: scenarioContext,
-        targets: Array.from({length: scenarioTargetCount}, targetGen())
+        targets: Array.from({length: sTargetCount}, targetGen())
     };
 };
 
@@ -21,6 +47,15 @@ const scenarioGen = (scenarioType, scenarioContext, scenarioTargetCount = 3) => 
 
 
 
+const tempScenarios = Array.from({length: 30}, () => scenarioGen());
+
+
+
+
+
+
+
+// Man
 const scenarios = [
     // ================= 負向情境 =================
     { 
