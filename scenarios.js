@@ -1,5 +1,5 @@
 // --- 1. 匯入 emotion.js ---
-import {emotionData} from './emotion';
+import emotionData from './emotion.js';
 
 // --- 2. 情境 (轉為生成式，因為情境多元) ---
 
@@ -22,8 +22,22 @@ var initialData = [
 ]
 
 function chooseEmotion(c, r){
+    isCol=false
+    if (c == 1 || c == 2 || c == 18) {
+        r = r % 6;
+    } else if (c == 3 || c == 17) {
+        r = r % 5;
+    } else if (c == 12 || c == 13 || c == 14 || c == 15 || c== 16) {
+        r = r % 4;
+    }  else if (c == 4 || c == 5 || c == 6 || c == 7 || c== 11) {
+        r = r % 3;
+    }else{
+        r= r % 2;
+    }
+
     for (x in emotionData){
         if (x["col"] == c) {
+
             if (x["row"] == r){
                 return x["name"];
             }
@@ -34,16 +48,19 @@ function chooseEmotion(c, r){
 
 
 function targetGen (sPoints) {
+    console.log(sPoints)
     // 以下 3 行 t 指的是 target。
     var tLabel;
     var tThought;
     var tActions;
+    
     if (sPoints[2] > sPoints[0]) {
         tLabel = chooseEmotion(6 + Math.floor(Math.random() * 12), Math.floor(Math.random() * 5) + 1);
     }
     return {name: tLabel, thought: tThought, actions: tActions};
 }
 
+console.log(targetGen([0.0,0.0,1.0]));
 
 
 function scenarioGen (scenarioContext, sTargetCount = 3) {
