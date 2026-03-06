@@ -55,7 +55,7 @@ const tempScenarios = Array.from({length: 30}, () => scenarioGen());
 
 
 
-// Man
+// Man, what can I say?
 const scenarios = [
     // ================= 負向情境 =================
     { 
