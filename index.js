@@ -373,3 +373,5 @@ const scenarios = [
 ];
 
 var eData = emotionData;
+
+export default eData;
