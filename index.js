@@ -22,7 +22,6 @@ var initialData = [
 ]
 
 function chooseEmotion(c, r){
-    isCol=false
     if (c == 1 || c == 2 || c == 18) {
         r = r % 6;
     } else if (c == 3 || c == 17) {
