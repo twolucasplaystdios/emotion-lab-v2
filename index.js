@@ -371,3 +371,5 @@ const scenarios = [
         ]
     }
 ];
+
+var eData = emotionData;
