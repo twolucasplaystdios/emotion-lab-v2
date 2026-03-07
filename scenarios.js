@@ -6,7 +6,7 @@ import emotionData from './emotion.js';
 var initialData = [
     {
         type: [0.1,0.0,0.9], // 一定要是 float。
-        text: "你走進教室時，看到同學在座位上小聲講話，接著他們發出笑聲。", // 不要針對我 >:(
+        text: "你走進教室時，看到同學在座位上小聲講話，接著他們發出笑聲。",
         targets: Array.from({length: 3}, targetGen())
     },
     {
@@ -35,14 +35,13 @@ function chooseEmotion(c, r){
         r= r % 2;
     }
 
-    for (x in emotionData){
-        if (x["col"] == c) {
-
-            if (x["row"] == r){
-                return x["name"];
-            }
+    for (const x of emotionData) {
+    if (x.col == c) {
+        if (x.row == r) {
+            return x.name;
         }
     }
+}
     return undefined;
 }
 
